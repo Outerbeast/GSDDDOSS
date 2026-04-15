@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: .\build.cmd
+
+      - name: Checksum
+        run: |
+          Get-FileHash -Algorithm SHA256 .\GSDDDOSS.exe | Select-Object -ExpandProperty Hash | Out-File -Encoding ASCII -FilePath .\GSDDDOSS.exe.sha256.txt
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            GSDDDOSS.exe
+            GSDDDOSS.exe.sha256.txt
+          draft: true
+          generate_release_notes: true
+
+
