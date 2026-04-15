@@ -1,44 +1,95 @@
-# GSDDDOSS (GoldSource Denied Distributed Denial of Service Script)
-GSDDDOSS is a simple python script that monitors your goldsrc/svengine game server's udp log output for the following attacks:
-Bad Rcon,
-Split Packets,
-and A2S abuse / Reflected DDoS
+# GSDDDOSS (GoldSource Denied DDoS Script)
 
-Any ip associated with any of these attacks will be automagically blocked in the firewall.
+Go port of the original Python script. Monitors your GoldSrc/SvEngine game server's UDP log output for attacks and blocks offending IPs in the firewall.
 
-(blame H2 for the name :P)
+## Requirements
 
-If you find a bug, or have improved on the script - feel free to make a pull request!
+- Go 1.21 or greater
+- Administrator/root privileges
 
-## Requirements:
-python 3.6 or greater.
+## Building
 
-## Support:
-Windows (tested)
-
-Linux (untested, but should work)
-
-## Installation:
-Download & run the script, it will automatically start listening on udp port 8008.
-In your server.cfg file add the line: ```logaddress_add 127.0.0.1 8008```
-
-and either restart the server, or rcon the same line in the server console.
-
-note: ideally you wanna run the python command in a loop in case it crashes or something, use screen or tmux on linux.
-
-## Windows .bat trick for lazy administrator:
-(this assumes python3 is added in PATH)
-
-Make a new .bat file containing:
+**Windows:**
 ```
-@echo off
-title GSDDDOSS
-:watch
-python gsdddoss.py
-goto watch
+build.cmd
 ```
-After that make a shortcut to the bat file, and go to the shortcut properties.
 
-In the shortcut properties find the button labeled "Advanced" and tick off "Run as administrator".
+**Linux:**
+```
+chmod +x build.sh
+./build.sh
+```
 
-Then you just run the shortcut and press yes during UAC
+## Usage
+
+```
+GSDDOSS                           Defaults: 127.0.0.1:8008
+GSDDOSS --host 0.0.0.0           Custom host
+GSDDOSS --port 9000               Custom port
+GSDDOSS --grouped-rules           Windows: group IPs into single firewall rule
+GSDDOSS --firewall-cmd "cmd {ip}" Custom firewall command
+GSDDOSS --help
+```
+
+## Configuration
+
+On first run, `config.json` and `blocked.json` are created automatically.
+
+**config.json:**
+```json
+{
+    "listener_addr": "127.0.0.1",
+    "listener_port": 8008,
+    "windows_rule_ip_grouped": true,
+    "command_add_block": ""
+}
+```
+
+**blocked.json:**
+```json
+{
+    "ips": []
+}
+```
+
+### Migration
+
+If you have an existing `ips.json` from the Python version, it will be automatically migrated to `blocked.json` and renamed to `ips.json.bak`.
+
+## Server Configuration
+
+Add to your `server.cfg`:
+```
+logaddress_add 127.0.0.1 8008
+```
+
+Restart the server or run the same command in the server console.
+
+## Detected Attacks
+
+- Bad RCON attempts
+- Split packet abuse
+- A2S/Info responses (reflected DDoS)
+- Rate limit violations
+- Port blasting
+
+## Features
+
+- Graceful shutdown (Ctrl+C)
+- Localhost protection (won't block 127.0.0.1 or ::1)
+- Windows grouped firewall rules (avoids rule limits)
+- Custom firewall commands via config or CLI
+- Automatic migration from Python version
+
+## Windows Service (Optional)
+
+To run as a background service, use [NSSM](https://nssm.cc/):
+```
+nssm install GSDDDOSS C:\path\to\GSDDOSS.exe
+nssm start GSDDDOSS
+```
+
+## Support
+
+- Windows (tested)
+- Linux (should work)
