@@ -51,11 +51,6 @@ On first run, `config.json` and `blocked.json` are created automatically.
     "ips": []
 }
 ```
-
-### Migration
-
-If you have an existing `ips.json` from the Python version, it will be automatically migrated to `blocked.json` and renamed to `ips.json.bak`.
-
 ## Server Configuration
 
 Add to your `server.cfg`:
